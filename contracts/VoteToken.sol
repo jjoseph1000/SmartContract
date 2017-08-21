@@ -5,7 +5,7 @@ contract VoteToken {
     uint public constant _totalSupply = 472831000;
 
     string public constant symbol = "AMR";
-    string public constant name = "American Airlines Token";
+    string public constant name = "American Airlines Token";   
     uint8 public constant decimals = 0;
     address[] Addresses;
     

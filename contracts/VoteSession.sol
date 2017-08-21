@@ -4,8 +4,10 @@ contract VoteSession {
     bytes32[] _questions;
     bool[] _questionIsActive;
     address _owner;
+    address _voteToken;
 
     mapping(address => bytes32) _voteSelections;
+    mapping(address => bytes32) _voteSessionIds;
     mapping(address => uint) _hasVoted;
     address[] _voteSelectionsAddresses;
 
@@ -13,15 +15,42 @@ contract VoteSession {
         _owner = msg.sender;
     }
 
-    function Vote(string selectedAnswers) returns (bool Result) {        
+    function setVoteTokenAddress(address voteToken) returns (bool setTokenId){
+        require(msg.sender==_owner);
+        
+        _voteToken = voteToken;
+
+        return true;
+    }
+
+
+
+    function getVoteTokenAddress() returns (address VoteToken) {
+        return _voteToken;
+    }
+
+    function vote(string voteSessionId, string selectedAnswers) returns (bool Result) {        
         if (_hasVoted[msg.sender] == 0) {
             _hasVoted[msg.sender] = 1;
             _voteSelectionsAddresses.push(msg.sender);
         }
 
+        _voteSessionIds[msg.sender] = stringToBytes32(voteSessionId);
         _voteSelections[msg.sender] = stringToBytes32(selectedAnswers);
 
         return true;
+    }
+
+    function getLastVoteSessionId() returns (string voteSessionId1) {
+        string memory voteSessionId;
+
+        if (_hasVoted[msg.sender] == 0) {
+            voteSessionId = "";            
+        } else {
+            voteSessionId = bytes32ToString(_voteSessionIds[msg.sender]);
+        }
+
+        return voteSessionId;
     }
 
     function totalVoters() returns (uint256 totalVoters) {
