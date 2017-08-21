@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 contract VoteSession {
     bytes32[] _questions;
     bool[] _questionIsActive;
+    bytes32[] _questionIds;
     address _owner;
     address _voteToken;
 
@@ -67,11 +68,12 @@ contract VoteSession {
     }
 
 
-    function addQuestion(string question) returns (bool added) {
+    function addQuestion(string questionId, string question) returns (bool added) {
         require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
                 
         _questions.push(stringToBytes32(question));
         _questionIsActive.push(true);
+        _questionIds.push(stringToBytes32(questionId));
 
         return true;
     }
@@ -84,10 +86,11 @@ contract VoteSession {
         return true;
     }
 
-    function editQuestionAtIndex(uint questionIndex, string question) returns (bool updated) {
+    function editQuestionAtIndex(uint questionIndex, string questionId, string question) returns (bool updated) {
         require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
         
         _questions[questionIndex] = stringToBytes32(question);
+        _questionIds[questionIndex] = stringToBytes32(questionId);
 
         return true;
     }
@@ -96,8 +99,8 @@ contract VoteSession {
         return _questions.length;
     }
 
-    function getQuestionByIndex(uint questionIndex) returns (string question, bool isActive) {
-        return (bytes32ToString(_questions[questionIndex]),_questionIsActive[questionIndex]);
+    function getQuestionByIndex(uint questionIndex) returns (string questionId, string question, bool isActive) {
+        return (bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_questions[questionIndex]),_questionIsActive[questionIndex]);
     }
 
     function stringToBytes32(string memory source) returns (bytes32 result) {
