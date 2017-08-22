@@ -3,8 +3,8 @@ pragma solidity ^0.4.11;
 contract VotingToken {
     uint public constant _totalSupply = 10000000;
 
-    string public constant symbol = "ABC";
-    string public constant name = "ABC Corporation";
+    string public constant symbol = "DEF";
+    string public constant name = "DEF Corporation";
     uint8 public constant decimals = 0;
 
     mapping(address => uint256) balances;

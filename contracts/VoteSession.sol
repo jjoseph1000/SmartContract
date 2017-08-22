@@ -1,8 +1,12 @@
 pragma solidity ^0.4.11;
 
+contract IVotingToken {
+    function balanceOf(address _owner) constant returns (uint256 balance); 
+}
+
 contract VoteSession {
     bytes32[] _questions;
-    bool[] _questionIsActive;
+    uint[] _questionIsActive;
     bytes32[] _questionIds;
     address _owner;
     address _voteToken;
@@ -27,8 +31,8 @@ contract VoteSession {
 
 
 
-    function getVoteTokenAddress() returns (address VoteToken) {
-        return _voteToken;
+    function getVoteTokenAddress() returns (address VoteToken) {  
+        return (_voteToken);
     }
 
     function vote(string voteSessionId, string selectedAnswers) returns (bool Result) {        
@@ -70,17 +74,19 @@ contract VoteSession {
         return _voteSelectionsAddresses.length;
     }
 
-    function getVoteAnswers() returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
-        return (getVoteAnswersByAddress(msg.sender));
+    function getVoteAnswers() returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
+        return (getVoteAnswersByAddress(0,msg.sender));
     }
 
-    function getVoteAnswersByIndex(uint256 voterIndex) returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
+    function getVoteAnswersByIndex(uint256 voterIndex) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
         address selectedAddress = _voteSelectionsAddresses[voterIndex];
-        return (getVoteAnswersByAddress(selectedAddress));
+        return (getVoteAnswersByAddress(voterIndex,selectedAddress));
     }
 
-    function getVoteAnswersByAddress(address voterAddress) returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
-        return (voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]));
+    function getVoteAnswersByAddress(uint256 indexVoter,address voterAddress) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
+        IVotingToken votingToken = IVotingToken(_voteToken);
+
+        return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]),votingToken.balanceOf(voterAddress));
     }
 
 
@@ -88,7 +94,7 @@ contract VoteSession {
         require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
                 
         _questions.push(stringToBytes32(question));
-        _questionIsActive.push(true);
+        _questionIsActive.push(1);
         _questionIds.push(stringToBytes32(questionId));
 
         return true;
@@ -97,7 +103,7 @@ contract VoteSession {
     function removeQuestionAtIndex(uint questionIndex) returns (bool removed) {
         require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
 
-        _questionIsActive[questionIndex] = false;                 
+        _questionIsActive[questionIndex] = 0;                 
          
         return true;
     }
@@ -115,8 +121,8 @@ contract VoteSession {
         return _questions.length;
     }
 
-    function getQuestionByIndex(uint questionIndex) returns (string questionId, string question, bool isActive) {
-        return (bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_questions[questionIndex]),_questionIsActive[questionIndex]);
+    function getQuestionByIndex(uint questionIndex) returns (uint questionIndex1, string questionId, string question, uint isActive) {
+        return (questionIndex, bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_questions[questionIndex]),_questionIsActive[questionIndex]);
     }
 
     function stringToBytes32(string memory source) returns (bytes32 result) {
