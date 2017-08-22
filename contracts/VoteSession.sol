@@ -9,6 +9,7 @@ contract VoteSession {
 
     mapping(address => bytes32) _voteSelections;
     mapping(address => bytes32) _voteSessionIds;
+    mapping(address => bytes32) _voteTransactionIds;
     mapping(address => uint) _hasVoted;
     address[] _voteSelectionsAddresses;
 
@@ -37,8 +38,19 @@ contract VoteSession {
         }
 
         _voteSessionIds[msg.sender] = stringToBytes32(voteSessionId);
+        _voteTransactionIds[msg.sender] = stringToBytes32("");
         _voteSelections[msg.sender] = stringToBytes32(selectedAnswers);
 
+        return true;
+    }
+
+    function setVoteTransactionId(address votedAddress, string voteSessionId, string transactionId) returns (bool Result) {        
+        require(_voteSessionIds[votedAddress] == stringToBytes32(voteSessionId)); 
+        
+        if (_voteSessionIds[votedAddress] == stringToBytes32(voteSessionId)) {
+            _voteTransactionIds[votedAddress] = stringToBytes32(transactionId);
+        } 
+       
         return true;
     }
 
@@ -58,13 +70,17 @@ contract VoteSession {
         return _voteSelectionsAddresses.length;
     }
 
-    function getVoteAnswers() returns (string voteAnswers) {
-        return bytes32ToString(_voteSelections[msg.sender]);
+    function getVoteAnswers() returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
+        return (getVoteAnswersByAddress(msg.sender));
     }
 
-    function getVoteAnswersByIndex(uint256 voterIndex) returns (address voter, string voteAnswers) {
+    function getVoteAnswersByIndex(uint256 voterIndex) returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
         address selectedAddress = _voteSelectionsAddresses[voterIndex];
-        return (selectedAddress, bytes32ToString(_voteSelections[selectedAddress]));
+        return (getVoteAnswersByAddress(selectedAddress));
+    }
+
+    function getVoteAnswersByAddress(address voterAddress) returns (address voter, string voteSessionId, string voteAnswers, string transactionId) {
+        return (voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]));
     }
 
 
