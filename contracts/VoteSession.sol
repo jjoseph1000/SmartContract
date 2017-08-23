@@ -5,9 +5,13 @@ contract IVotingToken {
 }
 
 contract VoteSession {
-    bytes32[] _questions;
-    uint[] _questionIsActive;
+    mapping(bytes32 => bytes32) _question;
+    mapping(bytes32 => bytes32) _boardRecommendation;
+    mapping(bytes32 => uint) _questionIsActive;
+    mapping(bytes32 => uint) _hasQuestion;
     bytes32[] _questionIds;
+
+
     address _owner;
     address _voteToken;
 
@@ -89,40 +93,25 @@ contract VoteSession {
         return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]),votingToken.balanceOf(voterAddress));
     }
 
+    function insertUpdateQuestion(string questionId, string question, string boardRecommendation, uint isActive) returns (bool insertupdate) {
+        bytes32 bytesQuestionId = stringToBytes32(questionId);
+        if (_hasQuestion[bytesQuestionId] == 0) {
+            _hasQuestion[bytesQuestionId] = 1;
+            _questionIds.push(bytesQuestionId);
+        }
 
-    function addQuestion(string questionId, string question) returns (bool added) {
-        require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
-                
-        _questions.push(stringToBytes32(question));
-        _questionIsActive.push(1);
-        _questionIds.push(stringToBytes32(questionId));
-
-        return true;
-    }
-
-    function removeQuestionAtIndex(uint questionIndex) returns (bool removed) {
-        require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
-
-        _questionIsActive[questionIndex] = 0;                 
-         
-        return true;
-    }
-
-    function editQuestionAtIndex(uint questionIndex, string questionId, string question) returns (bool updated) {
-        require(msg.sender == _owner && _voteSelectionsAddresses.length == 0); 
-        
-        _questions[questionIndex] = stringToBytes32(question);
-        _questionIds[questionIndex] = stringToBytes32(questionId);
-
-        return true;
+        _question[bytesQuestionId] = stringToBytes32(question);
+        _boardRecommendation[bytesQuestionId] = stringToBytes32(boardRecommendation);
+        _questionIsActive[bytesQuestionId] = isActive;
     }
 
     function totalQuestions() returns (uint totalQuestions) {
-        return _questions.length;
+        return _questionIds.length;
     }
 
-    function getQuestionByIndex(uint questionIndex) returns (uint questionIndex1, string questionId, string question, uint isActive) {
-        return (questionIndex, bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_questions[questionIndex]),_questionIsActive[questionIndex]);
+    function getQuestionByIndex(uint questionIndex) returns (uint questionIndex1, string questionId, string question, string boardRecommendation,uint isActive) {
+        bytes32 bytesQuestionId = _questionIds[questionIndex];
+        return (questionIndex, bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_question[bytesQuestionId]),bytes32ToString(_boardRecommendation[bytesQuestionId]),_questionIsActive[bytesQuestionId]);
     }
 
     function stringToBytes32(string memory source) returns (bytes32 result) {
