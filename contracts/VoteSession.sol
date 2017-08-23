@@ -5,11 +5,12 @@ contract IVotingToken {
 }
 
 contract VoteSession {
-    mapping(bytes32 => bytes32) _question;
+    bytes32[] _questionIds;
+    mapping(bytes32 => uint) _questionTextRows;
+    mapping(bytes32 => mapping(uint => string)) _questionText;
     mapping(bytes32 => bytes32) _boardRecommendation;
     mapping(bytes32 => uint) _questionIsActive;
     mapping(bytes32 => uint) _hasQuestion;
-    bytes32[] _questionIds;
 
 
     address _owner;
@@ -93,25 +94,37 @@ contract VoteSession {
         return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]),votingToken.balanceOf(voterAddress));
     }
 
-    function insertUpdateQuestion(string questionId, string question, string boardRecommendation, uint isActive) returns (bool insertupdate) {
+    function insertUpdateQuestion(string questionId, uint questionTextRows, string questionText, string boardRecommendation, uint isActive) returns (bool insertupdate) {
         bytes32 bytesQuestionId = stringToBytes32(questionId);
         if (_hasQuestion[bytesQuestionId] == 0) {
             _hasQuestion[bytesQuestionId] = 1;
             _questionIds.push(bytesQuestionId);
         }
 
-        _question[bytesQuestionId] = stringToBytes32(question);
+        _questionTextRows[bytesQuestionId] = questionTextRows;
         _boardRecommendation[bytesQuestionId] = stringToBytes32(boardRecommendation);
         _questionIsActive[bytesQuestionId] = isActive;
+        _questionText[bytesQuestionId][0] = questionText;
+    }
+    function addQuestionTextRow(string questionId, uint questionTextRow, string questionText) returns (bool success) {
+        bytes32 bytesQuestionId = stringToBytes32(questionId);
+        _questionText[bytesQuestionId][questionTextRow] = questionText;
+
+        return true;
+    } 
+
+    function getQuestionTextByRow(string questionId, uint questionTextRow) returns (string questionid, uint row, string textLine) {
+        bytes32 bytesQuestionId = stringToBytes32(questionId);
+        return (questionId, questionTextRow,_questionText[bytesQuestionId][questionTextRow]);
     }
 
     function totalQuestions() returns (uint totalQuestions) {
         return _questionIds.length;
     }
 
-    function getQuestionByIndex(uint questionIndex) returns (uint questionIndex1, string questionId, string question, string boardRecommendation,uint isActive) {
+    function getQuestionByIndex(uint questionIndex) returns (uint questionIndex1, string questionId, uint questionTextRows, string boardRecommendation,uint isActive) {
         bytes32 bytesQuestionId = _questionIds[questionIndex];
-        return (questionIndex, bytes32ToString(_questionIds[questionIndex]),bytes32ToString(_question[bytesQuestionId]),bytes32ToString(_boardRecommendation[bytesQuestionId]),_questionIsActive[bytesQuestionId]);
+        return (questionIndex, bytes32ToString(_questionIds[questionIndex]),_questionTextRows[bytesQuestionId],bytes32ToString(_boardRecommendation[bytesQuestionId]),_questionIsActive[bytesQuestionId]);
     }
 
     function stringToBytes32(string memory source) returns (bytes32 result) {
