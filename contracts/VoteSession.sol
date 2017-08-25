@@ -7,7 +7,7 @@ contract IVotingToken {
 contract VoteSession {
     bytes32[] _questionIds;
     mapping(bytes32 => uint) _questionTextRows;
-    mapping(bytes32 => mapping(uint => string)) _questionText;
+    mapping(bytes32 => mapping(uint => bytes32)) _questionText;
     mapping(bytes32 => bytes32) _boardRecommendation;
     mapping(bytes32 => uint) _questionIsActive;
     mapping(bytes32 => uint) _hasQuestion;
@@ -96,7 +96,7 @@ contract VoteSession {
         return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), _blockNumbers[voterAddress],votingToken.balanceOf(voterAddress));
     }
 
-    function insertUpdateQuestion(string questionId, uint questionTextRows, string questionText, string boardRecommendation, uint isActive) returns (bool insertupdate) {
+    function insertUpdateQuestion(string questionId, uint questionTextRows, bytes32 questionText, string boardRecommendation, uint isActive) returns (bool insertupdate) {
         bytes32 bytesQuestionId = stringToBytes32(questionId);
         if (_hasQuestion[bytesQuestionId] == 0) {
             _hasQuestion[bytesQuestionId] = 1;
@@ -108,14 +108,14 @@ contract VoteSession {
         _questionIsActive[bytesQuestionId] = isActive;
         _questionText[bytesQuestionId][0] = questionText;
     }
-    function addQuestionTextRow(string questionId, uint questionTextRow, string questionText) returns (bool success) {
+    function addQuestionTextRow(string questionId, uint questionTextRow, bytes32 questionText) returns (bool success) {
         bytes32 bytesQuestionId = stringToBytes32(questionId);
         _questionText[bytesQuestionId][questionTextRow] = questionText;
 
         return true;
     } 
 
-    function getQuestionTextByRow(string questionId, uint questionTextRow) returns (string questionid, uint row, string textLine) {
+    function getQuestionTextByRow(string questionId, uint questionTextRow) returns (string questionid, uint row, bytes32 textLine) {
         bytes32 bytesQuestionId = stringToBytes32(questionId);
         return (questionId, questionTextRow,_questionText[bytesQuestionId][questionTextRow]);
     }
