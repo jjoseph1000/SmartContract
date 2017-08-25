@@ -19,6 +19,7 @@ contract VoteSession {
     mapping(address => bytes32) _voteSelections;
     mapping(address => bytes32) _voteSessionIds;
     mapping(address => bytes32) _voteTransactionIds;
+    mapping(address => uint) _blockNumbers;
     mapping(address => uint) _hasVoted;
     address[] _voteSelectionsAddresses;
 
@@ -49,6 +50,7 @@ contract VoteSession {
         _voteSessionIds[msg.sender] = stringToBytes32(voteSessionId);
         _voteTransactionIds[msg.sender] = stringToBytes32("");
         _voteSelections[msg.sender] = stringToBytes32(selectedAnswers);
+        _blockNumbers[msg.sender] = block.number;
 
         return true;
     }
@@ -79,19 +81,19 @@ contract VoteSession {
         return _voteSelectionsAddresses.length;
     }
 
-    function getVoteAnswers() returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
+    function getVoteAnswers() returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
         return (getVoteAnswersByAddress(0,msg.sender));
     }
 
-    function getVoteAnswersByIndex(uint256 voterIndex) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
+    function getVoteAnswersByIndex(uint256 voterIndex) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
         address selectedAddress = _voteSelectionsAddresses[voterIndex];
         return (getVoteAnswersByAddress(voterIndex,selectedAddress));
     }
 
-    function getVoteAnswersByAddress(uint256 indexVoter,address voterAddress) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, string transactionId, uint256 balance) {
+    function getVoteAnswersByAddress(uint256 indexVoter,address voterAddress) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
         IVotingToken votingToken = IVotingToken(_voteToken);
 
-        return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), bytes32ToString(_voteTransactionIds[voterAddress]),votingToken.balanceOf(voterAddress));
+        return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), _blockNumbers[voterAddress],votingToken.balanceOf(voterAddress));
     }
 
     function insertUpdateQuestion(string questionId, uint questionTextRows, string questionText, string boardRecommendation, uint isActive) returns (bool insertupdate) {
