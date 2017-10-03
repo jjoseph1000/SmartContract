@@ -11,41 +11,44 @@ contract VoteSessionBroadRidge {
 
     address _owner;
 
-    mapping(address => bytes32) _voteSelections;
-    mapping(address => bytes32) _voteSessionIds;
-    mapping(address => uint256) _voteShares;
-    mapping(address => uint) _blockNumbers;
-    mapping(address => uint) _hasVoted;
-    address[] _voteSelectionsAddresses;
+    mapping(bytes32 => bytes32) _voteSelections;
+    mapping(bytes32 => bytes32) _voteSessionIds;
+    mapping(bytes32 => uint256) _voteShares;
+    mapping(bytes32 => uint) _blockNumbers;
+    mapping(bytes32 => uint) _hasVoted;
+    bytes32[] _voteSelectionsAddresses;
 
     function VoteSessionBroadRidge() {
         _owner = msg.sender;
     }
 
-    function vote(address voter,string voteSessionId, string selectedAnswers, uint256 voteShares) returns (bool Result) {        
+    function vote(string voter,string voteSessionId, string selectedAnswers, uint256 voteShares) returns (bool Result) {        
         require(_owner == msg.sender);
         
-        if (_hasVoted[voter] == 0) {
-            _hasVoted[voter] = 1;
-            _voteSelectionsAddresses.push(voter);
+        bytes32 _b32Voter = stringToBytes32(voter);
+
+        if (_hasVoted[_b32Voter] == 0) {
+            _hasVoted[_b32Voter] = 1;
+            _voteSelectionsAddresses.push(_b32Voter);
         }
 
-        _voteSessionIds[voter] = stringToBytes32(voteSessionId);
-        _voteShares[voter] = voteShares;
-        _voteSelections[voter] = stringToBytes32(selectedAnswers);
-        _blockNumbers[voter] = block.number;
+        _voteSessionIds[_b32Voter] = stringToBytes32(voteSessionId);
+        _voteShares[_b32Voter] = voteShares;
+        _voteSelections[_b32Voter] = stringToBytes32(selectedAnswers);
+        _blockNumbers[_b32Voter] = block.number;
 
         return true;
     }
 
-
-    function getLastVoteSessionId() returns (string voteSessionId1) {
+    function getLastVoteSessionId(string voter) returns (string voteSessionId1) {
         string memory voteSessionId;
+        bytes32 _b32Voter = stringToBytes32(voter);
 
-        if (_hasVoted[msg.sender] == 0) {
+
+        if (_hasVoted[_b32Voter] == 0) {
             voteSessionId = "";            
         } else {
-            voteSessionId = bytes32ToString(_voteSessionIds[msg.sender]);
+            voteSessionId = bytes32ToString(_voteSessionIds[_b32Voter]);
         }
 
         return voteSessionId;
@@ -55,17 +58,13 @@ contract VoteSessionBroadRidge {
         return _voteSelectionsAddresses.length;
     }
 
-    function getVoteAnswers() returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
-        return (getVoteAnswersByAddress(0,msg.sender));
+    function getVoteAnswersByIndex(uint256 voterIndex) returns (uint256 indexVoter1,string voter1, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
+        string memory selectedVoter = bytes32ToString(_voteSelectionsAddresses[voterIndex]);
+        return (getVoteAnswersByVoterId(voterIndex,selectedVoter));
     }
 
-    function getVoteAnswersByIndex(uint256 voterIndex) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
-        address selectedAddress = _voteSelectionsAddresses[voterIndex];
-        return (getVoteAnswersByAddress(voterIndex,selectedAddress));
-    }
-
-    function getVoteAnswersByAddress(uint256 indexVoter,address voterAddress) returns (uint256 indexVoter1,address voter, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
-        return (indexVoter, voterAddress, bytes32ToString(_voteSessionIds[voterAddress]), bytes32ToString(_voteSelections[voterAddress]), _blockNumbers[voterAddress],_voteShares[voterAddress]);
+    function getVoteAnswersByVoterId(uint256 indexVoter,string voter) returns (uint256 indexVoter1,string voter1, string voteSessionId, string voteAnswers, uint blockNumber, uint256 balance) {
+        return (indexVoter, voter, bytes32ToString(_voteSessionIds[stringToBytes32(voter)]), bytes32ToString(_voteSelections[stringToBytes32(voter)]), _blockNumbers[stringToBytes32(voter)],_voteShares[stringToBytes32(voter)]);
     }
 
     function insertUpdateQuestion(string questionId, uint questionTextRows, bytes32 questionText, string boardRecommendation, uint isActive) returns (bool insertupdate) {
@@ -82,6 +81,7 @@ contract VoteSessionBroadRidge {
         _questionIsActive[bytesQuestionId] = isActive;
         _questionText[bytesQuestionId][0] = questionText;
     }
+
     function addQuestionTextRow(string questionId, uint questionTextRow, bytes32 questionText) returns (bool success) {
         require(_owner == msg.sender);
         
