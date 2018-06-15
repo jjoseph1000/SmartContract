@@ -4,5 +4,5 @@ var VoteSessionBroadRidge = artifacts.require("./VoteSessionBroadRidge.sol");
 var VotingToken = artifacts.require("./VotingToken.sol");
 var ScoreStore = artifacts.require("./ScoreStore.sol");
 module.exports = function(deployer) {
-  deployer.deploy(ScoreStore);
+  deployer.deploy(VoteSession);
 };
